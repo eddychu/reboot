@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>My New Hugo Site</title>
+    <link>http://example.org/</link>
+    <description>Recent content on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 24 May 2023 08:45:31 +0800</lastBuildDate><atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Build a Rasterizer With Webgpu 01</title>
+      <link>http://example.org/posts/build-a-rasterizer-with-webgpu/</link>
+      <pubDate>Wed, 24 May 2023 08:45:31 +0800</pubDate>
+      
+      <guid>http://example.org/posts/build-a-rasterizer-with-webgpu/</guid>
+      <description>Now since WebGPU is offcially rolled out in Chrome browser, let&amp;rsquo;s try it out by building a rasterizer using this new API.
+Basic Setup First, we need to check everything is ready for WebGPU. We can do this by checking if the navigator.gpu is available.
+if (!navigator.gpu) { console.error(&amp;#39;WebGPU is not supported&amp;#39;); return; } If you have error in your console, that means you need to download the latest version of Chrome.</description>
+    </item>
+    
+  </channel>
+</rss>
