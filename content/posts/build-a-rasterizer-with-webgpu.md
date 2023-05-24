@@ -1,7 +1,7 @@
 ---
-title: "Build a Rasterizer With Webgpu"
+title: "Build a Rasterizer With Webgpu 01"
 date: 2023-05-24T08:45:31+08:00
-draft: true
+draft: false
 ---
 
 Now since WebGPU is offcially rolled out in Chrome browser, let's try it out by building a rasterizer using this new API.
@@ -379,3 +379,143 @@ The graphics pipeline setup is more involved than the compute pipeline, because 
 
 If all goes well, you will get a screen with a faded gradient color on your screen.
 
+## Draw a triangle
+
+Now that we have the basic routine setup, let's feed a triangle to the compute shader and rasterize it on the screen.
+
+First, we need to create a vertex buffer. The vertex buffer contains the vertex data we want to draw. In this case, we want to draw a triangle, so we need to create a vertex buffer with 3 vertices.
+
+```ts
+  const vertices = new Float32Array([
+      10, 10,
+      10, 80,
+      80, 10
+  ]);
+
+  const vertexBuffer = device.createBuffer({
+    size: vertices.byteLength,
+    usage: GPUBufferUsage.STORAGE,
+    mappedAtCreation: true
+  });
+  new Float32Array(vertexBuffer.getMappedRange()).set(vertices);
+  vertexBuffer.unmap();
+```
+we also need to pass screen width and height to the compute shader, so we need to update the uniform buffer, and the bind group layout and bind group object.
+
+```ts
+  const uniformBufferSize = 4 * 2;
+  const uniformBuffer = device.createBuffer({
+    size: uniformBufferSize,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+  });
+  device.queue.writeBuffer(
+    uniformBuffer,
+    0,
+    new Float32Array([width, height])
+  );
+
+
+ const bindGroupLayout = device.createBindGroupLayout({
+    entries: [
+      {
+        binding: 0,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: {
+          type: "storage"
+        }
+      },
+
+      /// NEW!!!
+      {
+        binding: 1,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: {
+          type: "read-only-storage"
+        }
+      },
+      {
+        binding: 2,
+        visibility: GPUShaderStage.COMPUTE,
+        buffer: {
+          type: "uniform"
+        }
+      }
+    ]
+  });
+
+  // create bind group
+  const bindGroup = device.createBindGroup({
+    layout: bindGroupLayout,
+    entries: [
+      {
+        binding: 0,
+        resource: {
+          buffer: colorBuffer
+        }
+      },
+      {
+        binding: 1,
+        resource: {
+          buffer: vertexBuffer
+        }
+      },
+      {
+        binding: 2,
+        resource: {
+          buffer: uniformBuffer
+        }
+      }
+    ]
+  });
+
+```
+
+Now we need to update the compute shader to read the vertex data from the vertex buffer.
+
+```wgsl
+// create a draw line and draw pixel function
+
+fn draw_pixel(x: u32, y: u32, r: u32, g: u32, b: u32) {
+  let index = u32(x + y * u32(uniforms.screenWidth)) * 3;
+  color_buffer.values[index] = r;
+  color_buffer.values[index + 1] = g;
+  color_buffer.values[index + 2] = b;
+}
+
+
+// bresenham's line algorithm
+fn draw_line(v1: vec2<f32>, v2: vec2<f32>) {
+  let dx = v2.x - v1.x;
+  let dy = v2.y - v1.y;
+
+  let steps = max(abs(dx), abs(dy));
+
+  let x_increment = dx / steps;
+  let y_increment = dy / steps;
+
+  for(var i = 0u; i < u32(steps); i = i + 1) {
+    let x = u32(v1.x + f32(i) * x_increment);
+    let y = u32(v1.y + f32(i) * y_increment);
+    draw_pixel(x, y, 255, 255, 255);
+  }
+}
+
+```
+
+you can find more information about bresenham's line algorithm [here](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm).
+
+
+You should see a triangle in wireframe mode on the screen. My implementation can be found [here](https://github.com/eddychu/webgpu-rasterizer.git)
+
+We can extend this basic example to fill the triangle with color and add vertex transformation and camera feature, even with pbr material and  lighting calculation. But that is for another day.
+
+
+**Reference**
+
+[How to Build a Compute Rasterizer with WebGPU](
+https://github.com/OmarShehata/webgpu-compute-rasterizer/blob/main/how-to-build-a-compute-rasterizer.md
+)
+
+[WebGPU — All of the cores, none of the canvas](https://surma.dev/things/webgpu/)
+
+[WebGPU Samples](https://austin-eng.com/webgpu-samples/)
