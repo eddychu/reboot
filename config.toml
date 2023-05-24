@@ -1,4 +1,4 @@
-baseURL = 'https://rebooting.netlify.app'
+baseURL = 'https://weirdinstruction.netlify.app'
 languageCode = 'en-us'
 title = 'Weird Instruction'
 theme = 'PaperMod'

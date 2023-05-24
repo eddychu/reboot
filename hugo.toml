@@ -1,4 +1,4 @@
-baseURL = 'http://example.org/'
+baseURL = 'https://weirdinstruction.netlify.app'
 languageCode = 'en-us'
 title = 'Weird Instruction'
 theme = 'PaperMod'
